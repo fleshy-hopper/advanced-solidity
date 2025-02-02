@@ -1,0 +1,37 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract Practice {
+    // 状态变量，用于存储函数选择器
+    bytes4 public storedSelector;
+
+    function square(uint x) external pure returns (uint) {
+        return x * x;
+    }
+
+    function double(uint x) external pure returns (uint) {
+        return x * 2;
+    }
+
+    // 根据传入的选择器动态调用square或double函数
+    function executeFunction(bytes4 selector, uint x) external returns (uint z) {
+        (bool success, bytes memory data) = address(this).call(abi.encodeWithSelector(selector, x));
+        require(success, "Call failed");
+        z = abi.decode(data, (uint));
+        return z;
+    }
+
+    // 存储选择器到状态变量storedSelector中
+    function storeSelectorHandler(bytes4 selector) public {
+        storedSelector = selector;
+    }
+
+    // 调用存储在storedSelector中的函数，并返回结果
+    function executeStoredFunction(uint x) external returns (uint z) {
+        require(storedSelector != bytes4(0), "Selector not set!");
+        (bool success, bytes memory data) = address(this).call(abi.encodeWithSelector(storedSelector, x));
+        require(success, "Call failed");
+        z = abi.decode(data, (uint));
+        return z;
+    }
+}
